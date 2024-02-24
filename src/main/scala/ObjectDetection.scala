@@ -1,8 +1,6 @@
 import ai.djl.Application
 import ai.djl.engine.Engine
 import ai.djl.modality.cv.output.DetectedObjects
-import ai.djl.modality.cv.transform.ToTensor
-import ai.djl.modality.cv.translator.SingleShotDetectionTranslator
 import ai.djl.modality.cv.{Image, ImageFactory}
 import ai.djl.repository.zoo.{Criteria, ModelZoo, ZooModel}
 import ai.djl.training.util.ProgressBar
@@ -12,29 +10,21 @@ import java.nio.file.{Files, Paths}
 import java.time.Instant
 import scala.jdk.CollectionConverters._
 
-object Engines {
+object ObjectDetection extends App {
+  object Engines {
 
-//  object PyTorch {
-//    val name = "PyTorch"
-//
-//    object Models {
-//      val resnet50 = "resnet50"
-//    }
-//  }
+    object MxNet {
+      val name = "MXNet"
 
-  object MxNet {
-    val name = "MXNet"
-
-    object Models {
-      val darknet53 = "darknet53"
-      val mobileNet = "mobilenet1.0"
-      val resnet50 = "resnet50"
-      val vgg16 = "vgg16"
+      object Models {
+        val darknet53 = "darknet53"
+        val mobileNet = "mobilenet1.0"
+        val resnet50 = "resnet50"
+        val vgg16 = "vgg16"
+      }
     }
   }
-}
 
-object ObjectDetection extends App {
   private val imageName = "dog_bike_car.jpg"
 
   private val logger = LoggerFactory.getLogger("ObjectDetection")
