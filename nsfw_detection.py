@@ -12,10 +12,15 @@ images = (
   "images/dog_bike_car.jpg"
 )
 
+model_name = "Falconsai/nsfw_image_detection"
+#model_name = "converted.pt"
+
+model = AutoModelForImageClassification.from_pretrained(model_name)
+processor = ViTImageProcessor.from_pretrained(model_name)
+
 def check(image_name):
     img = Image.open(image_name)
-    model = AutoModelForImageClassification.from_pretrained("Falconsai/nsfw_image_detection")
-    processor = ViTImageProcessor.from_pretrained('Falconsai/nsfw_image_detection')
+
     with torch.no_grad():
         inputs = processor(images=img, return_tensors="pt")
         outputs = model(**inputs)
