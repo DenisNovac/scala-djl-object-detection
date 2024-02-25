@@ -25,11 +25,16 @@ object ObjectDetection extends App {
     }
   }
 
-  private val imageName = "dog_bike_car.jpg"
+  private val images =
+    List(
+      "dog_bike_car.jpg",
+      "pony-toys.jpg",
+      "street.jpg"
+    )
 
   private val logger = LoggerFactory.getLogger("ObjectDetection")
 
-  val models = ModelZoo
+  private val models = ModelZoo
     .listModels()
     .asScala
     .map(t => t._1 -> t._2.asScala.mkString("\n"))
@@ -38,45 +43,43 @@ object ObjectDetection extends App {
   println("Available models for engine: " + models)
 
   private val useEngine = Engines.MxNet.name
-  private val useModel = Engines.MxNet.Models.darknet53
+  private val useModel = Engines.MxNet.Models.vgg16
 
-  predict()
+  private val criteria: Criteria[Image, DetectedObjects] =
+    Criteria.builder
+      .optApplication(Application.CV.OBJECT_DETECTION)
+      .setTypes(classOf[Image], classOf[DetectedObjects])
+      .optEngine(Engine.getEngine(useEngine).getEngineName)
+      .optFilter("backbone", useModel)
+      .optProgress(new ProgressBar)
+      .build
 
-  private def predict() = {
+  private val model: ZooModel[Image, DetectedObjects] = criteria.loadModel()
+
+  private val predictor = model.newPredictor()
+
+  images.map(predict)
+
+  private def predict(imageName: String) = {
     val imagePath = Paths.get(s"images/$imageName")
 
     val img = ImageFactory.getInstance().fromFile(imagePath)
 
-    val criteria: Criteria[Image, DetectedObjects] =
-      Criteria.builder
-        .optApplication(Application.CV.OBJECT_DETECTION)
-        .setTypes(classOf[Image], classOf[DetectedObjects])
-        .optEngine(Engine.getEngine(useEngine).getEngineName)
-        .optFilter("backbone", useModel)
-        .optProgress(new ProgressBar)
-        .build
-
-    val model: ZooModel[Image, DetectedObjects] = criteria.loadModel()
-
-    val predictor = model.newPredictor()
-
     val detection = predictor.predict(img)
 
-    predictor.close()
-    model.close()
-
-    logger.info(s"Detection: $detection")
-
     if (detection.getNumberOfObjects == 0)
-      logger.warn("Nothing was detected")
-    else
-      saveBounds(img, detection)
+      logger.warn(s"Nothing was detected on $imageName")
+    else {
+      logger.info(s"$imageName: $detection")
+      saveBounds(img, imageName, detection)
+    }
 
     detection
   }
 
   private def saveBounds(
       image: Image,
+      imageName: String,
       detection: DetectedObjects
   ): Unit = {
     val fmt = "png"
@@ -98,4 +101,6 @@ object ObjectDetection extends App {
     logger.info(s"Detected objects image has been saved in $imagePath")
   }
 
+  predictor.close()
+  model.close()
 }
