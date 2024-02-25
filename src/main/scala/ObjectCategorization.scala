@@ -17,7 +17,8 @@ object ObjectCategorization extends App {
       val name = "PyTorch"
 
       object Models {
-        // https://huggingface.co/Falconsai/nsfw_image_detection
+        // https://huggingface.co/Falconsai/nsfw_image_detection 63e0a06
+        // you need to run convert.py, it will download and automatically convert model to the needed one
         val falconsai = "converted.pt"
       }
     }
@@ -26,7 +27,7 @@ object ObjectCategorization extends App {
 
   private val imageName = "dog_bike_car.jpg"
 
-  private val logger = LoggerFactory.getLogger("ObjectDetection")
+  private val logger = LoggerFactory.getLogger("ObjectCategorization")
 
   predict()
 
@@ -40,6 +41,7 @@ object ObjectCategorization extends App {
         .builder()
         .optSynsetArtifactName("synset.txt")
         .addTransform(new Resize(256))
+        // from the model description it was trained on 224x224 images
         .addTransform(new CenterCrop(224, 224))
         .addTransform(new ToTensor())
         .addTransform(
